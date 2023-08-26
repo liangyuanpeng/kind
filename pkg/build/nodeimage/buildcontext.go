@@ -186,6 +186,7 @@ func (c *buildContext) prePullImagesAndWriteManifests(bits kube.Bits, parsedVers
 	// the tags as we load the archives
 	fixedImages := sets.NewString()
 	for _, image := range builtImages.List() {
+		c.logger.V(0).Infof("===============lan.dev.image:%s", image)
 		registry, tag, err := docker.SplitImage(image)
 		if err != nil {
 			return nil, err
@@ -221,6 +222,7 @@ func (c *buildContext) prePullImagesAndWriteManifests(bits kube.Bits, parsedVers
 		}
 	}
 	requiredImages = append(requiredImages[:n], pauseImage)
+	requiredImages = append(requiredImages, "envoyproxy/envoy:v1.25.1")
 
 	if parsedVersion.LessThan(version.MustParseSemantic("v1.24.0")) {
 		if err := configureContainerdSystemdCgroupFalse(cmder, string(containerdConfig)); err != nil {
@@ -263,11 +265,13 @@ func (c *buildContext) prePullImagesAndWriteManifests(bits kube.Bits, parsedVers
 		image := image // https://golang.org/doc/faq#closures_and_goroutines
 		fns = append(fns, func() error {
 			if !builtImages.Has(image) {
+				c.logger.V(0).Infof("===============lan.dev.image:%s begin", image)
 				if err = importer.Pull(image, dockerBuildOsAndArch(c.arch)); err != nil {
 					c.logger.Warnf("Failed to pull %s with error: %v", image, err)
 					runE := exec.RunErrorForError(err)
 					c.logger.Warn(string(runE.Output))
 				}
+				c.logger.V(0).Infof("===============lan.dev.image:%s successed", image)
 			}
 			return nil
 		})
