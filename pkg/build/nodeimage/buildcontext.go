@@ -222,7 +222,8 @@ func (c *buildContext) prePullImagesAndWriteManifests(bits kube.Bits, parsedVers
 		}
 	}
 	requiredImages = append(requiredImages[:n], pauseImage)
-	requiredImages = append(requiredImages, "envoyproxy/envoy:v1.25.1")
+	
+	requiredImages = append(requiredImages, "docker.io/envoyproxy/envoy:v1.25.1")
 
 	if parsedVersion.LessThan(version.MustParseSemantic("v1.24.0")) {
 		if err := configureContainerdSystemdCgroupFalse(cmder, string(containerdConfig)); err != nil {
